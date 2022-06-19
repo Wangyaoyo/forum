@@ -1,0 +1,22 @@
+# 数据库相关
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/forum?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
+  # ThymeleafProperties
+  thymeleaf:
+    cache: false
+mybatis-plus:
+  mapper-locations: classpath:/mybatisplus/mapper/*.xml
+configuration:
+  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  map-underscore-to-camel-case: true
+
+# 日志级别和输出路径：便于上线使用
+logging:
+  level:
+    root: debug
+  file:
+    path: D:/projectForWork/forum-log/error.log
