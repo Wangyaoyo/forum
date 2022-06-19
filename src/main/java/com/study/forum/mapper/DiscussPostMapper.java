@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.study.forum.pojo.DiscussPost;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.io.Serializable;
 
 /**
  * @author wy
