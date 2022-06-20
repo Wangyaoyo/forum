@@ -1,8 +1,11 @@
 package com.study.forum.controller;
 
+import com.google.code.kaptcha.Producer;
 import com.study.forum.pojo.User;
 import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +13,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 
 /**
@@ -19,14 +28,21 @@ import java.util.Map;
 @Controller
 public class LoginController {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+
     @Autowired
     UserService userService;
 
+    @Autowired
+    Producer kaptchaProducer;
+
+    /* 注册页面 */
     @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String getRegisterPage() {
         return "/site/register";
     }
 
+    /* 注册功能 */
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public String register(Model model, User user){
         Map<String, Object> map = userService.register(user);
@@ -42,6 +58,7 @@ public class LoginController {
         }
     }
 
+    /* 邮件激活账号 */
     @RequestMapping(value = "/activation/{id}/{code}", method = RequestMethod.GET)
     public String activation(Model model,
                              @PathVariable("id") Integer id,
@@ -60,9 +77,27 @@ public class LoginController {
         return "/site/operate-result";
     }
 
+    /* 登录页面 */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(){
         return "/site/login";
+    }
+
+    @RequestMapping(value = "/kaptcha")
+    public void getKaptcha(HttpServletResponse response, HttpSession session){
+        // 生成验证码和图片
+        String text = kaptchaProducer.createText();
+        BufferedImage image = kaptchaProducer.createImage(text);
+
+        // 保存进session
+        session.setAttribute("kaptcha", text);
+        response.setContentType("image/png");
+        try {
+            OutputStream os = response.getOutputStream();
+            ImageIO.write(image, "png", os);
+        } catch (IOException e) {
+            logger.error("响应验证码失败:" + e.getMessage());
+        }
     }
 
 }
