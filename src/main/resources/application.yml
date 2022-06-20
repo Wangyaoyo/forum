@@ -8,6 +8,20 @@ spring:
   # ThymeleafProperties
   thymeleaf:
     cache: false
+
+  # 配置邮件发送
+  mail:
+    # 发件人邮箱
+    username: 1368829476@qq.com
+    # 生成的授权码
+    password: pdtishetqoyghdib
+    # QQ的SMIP地址
+    host: smtp.qq.com
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 mybatis-plus:
   mapper-locations: classpath:/mybatisplus/mapper/*.xml
 configuration:
@@ -17,6 +31,11 @@ configuration:
 # 日志级别和输出路径：便于上线使用
 logging:
   level:
-    root: debug
+    root: info
   file:
     path: D:/projectForWork/forum-log/error.log
+
+# 为注册激活使用
+community:
+  path:
+    domain: http://localhost:8080/
