@@ -4,7 +4,6 @@ import com.google.code.kaptcha.Producer;
 import com.study.forum.pojo.User;
 import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityConstant;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

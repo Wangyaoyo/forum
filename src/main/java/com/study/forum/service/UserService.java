@@ -152,10 +152,25 @@ public class UserService {
         return map;
     }
 
-    public void logout(String ticket){
+    public void logout(String ticket) {
         // 划重点：很好用
         UpdateWrapper<LoginTicket> wrapper = new UpdateWrapper<>();
-        wrapper.set("status",1).eq("ticket", ticket);
+        wrapper.set("status", 1).eq("ticket", ticket);
         loginTicketMapper.update(null, wrapper);
+    }
+
+    public LoginTicket getLoginTicketByTicket(String ticket) {
+        QueryWrapper<LoginTicket> loginwrapper = new QueryWrapper<>();
+        loginwrapper.eq("ticket", ticket);
+        LoginTicket loginTicket = loginTicketMapper.selectOne(loginwrapper);
+
+        return loginTicket;
+    }
+
+    public User getUserById(int id) {
+        QueryWrapper<User> userwrapper = new QueryWrapper<>();
+        userwrapper.eq("id", id);
+        User user = userMapper.selectOne(userwrapper);
+        return user;
     }
 }
