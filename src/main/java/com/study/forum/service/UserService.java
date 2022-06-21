@@ -1,7 +1,10 @@
 package com.study.forum.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.study.forum.mapper.LoginTicketMapper;
 import com.study.forum.mapper.UserMapper;
+import com.study.forum.pojo.LoginTicket;
 import com.study.forum.pojo.User;
 import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
@@ -29,6 +32,9 @@ public class UserService {
 
     @Autowired
     private MailClient mailClient;
+
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
 
     @Value("${community.path.domain}")
     private String domain;
@@ -107,5 +113,49 @@ public class UserService {
         } else {
             return CommunityConstant.ACTIVATION_FAILURE;
         }
+    }
+
+    public Map<String, Object> login(String username, String password, int expiredSeconds) {
+        // 验证用户名密码为空、用户是否存在、账号是否激活、密码是否正确、
+        HashMap<String, Object> map = new HashMap<>();
+        if (StringUtils.isBlank(username)) {
+            map.put("usernameMsg", "用户名为空！");
+            return map;
+        }
+        if (StringUtils.isBlank(password)) {
+            map.put("passwordMsg", "密码为空！");
+            return map;
+        }
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username", username);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            map.put("usernameMsg", "账号不存在！");
+            return map;
+        }
+        if (user.getStatus() == 0) {
+            map.put("usernameMsg", "账号未激活！");
+            return map;
+        }
+        if (!user.getPassword().equals(CommunityUtil.md5(password + user.getSalt()))) {
+            map.put("passwordMsg", "密码错误！");
+            return map;
+        }
+        // 生成登录凭证
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(user.getId());
+        loginTicket.setTicket(CommunityUtil.generateUUID());
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
+        loginTicketMapper.insert(loginTicket);
+        map.put("ticket", loginTicket.getTicket());
+        return map;
+    }
+
+    public void logout(String ticket){
+        // 划重点：很好用
+        UpdateWrapper<LoginTicket> wrapper = new UpdateWrapper<>();
+        wrapper.set("status",1).eq("ticket", ticket);
+        loginTicketMapper.update(null, wrapper);
     }
 }
