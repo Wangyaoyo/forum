@@ -2,7 +2,6 @@ package com.study.forum.controller;
 
 import com.study.forum.pojo.User;
 import com.study.forum.service.UserService;
-import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -17,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.jws.WebParam;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -103,14 +100,39 @@ public class UserController {
         try (
                 OutputStream os = response.getOutputStream();
                 FileInputStream fis = new FileInputStream(filename);
-                ){
+        ) {
             byte[] buffer = new byte[1024];
             int b = 0;
-            while((b = fis.read(buffer)) != -1){
+            while ((b = fis.read(buffer)) != -1) {
                 os.write(buffer, 0, b);
             }
         } catch (IOException e) {
             logger.error("读取头像失败：{}", e);
         }
+    }
+
+    @RequestMapping(value = "/password", method = RequestMethod.POST)
+    public String changePassword(Model model, String oldPass, String newPass, String newPass2) {
+        if (StringUtils.isBlank(oldPass) || StringUtils.isBlank(newPass) || StringUtils.isBlank(newPass2)) {
+            model.addAttribute("passwordMsg", "密码不能为空!");
+            return "/site/setting";
+        }
+        if (!newPass.equals(newPass2)) {
+            model.addAttribute("newpassMsg", "新密码不一致！");
+            return "/site/setting";
+        }
+        User user = hostHolder.getUser();
+        String secret = CommunityUtil.md5(oldPass + user.getSalt());
+        if (!user.getPassword().equals(secret)) {
+            model.addAttribute("oldpassMsg", "原密码不正确！");
+            return "/site/setting";
+        }
+        int i = userService.changePass(user.getId(), CommunityUtil.md5(newPass+user.getSalt()));
+        logger.info("id为:{}的用户正在修改密码", user.getId());
+        if(i <= 0){
+            model.addAttribute("passwordMsg", "修改失败！");
+            return "/site/setting";
+        }else
+            return "redirect:/index";
     }
 }

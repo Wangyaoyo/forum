@@ -179,4 +179,10 @@ public class UserService {
         wrapper.set("header_url", url).eq("id", id);
         return userMapper.update(null, wrapper);
     }
+
+    public int changePass(int id, String password){
+        UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+        wrapper.set("password", password).eq("id", id);
+        return userMapper.update(null, wrapper);
+    }
 }
