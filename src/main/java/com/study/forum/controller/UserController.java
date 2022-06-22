@@ -1,5 +1,6 @@
 package com.study.forum.controller;
 
+import com.study.forum.annotation.LoginRequired;
 import com.study.forum.pojo.User;
 import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityUtil;
@@ -47,11 +48,13 @@ public class UserController {
     private String domain;
 
 
+    @LoginRequired
     @RequestMapping(value = "/setting", method = RequestMethod.GET)
     public String getSetting() {
         return "/site/setting";
     }
 
+    @LoginRequired
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public String upload(MultipartFile headerImage, Model model) {
         if (headerImage == null) {
@@ -88,6 +91,7 @@ public class UserController {
         return "redirect:/index";
     }
 
+
     @RequestMapping(value = "/headerurl/{filename}", method = RequestMethod.GET)
     public void getHeaderUrl(@PathVariable("filename") String filename, HttpServletResponse response) {
         if (StringUtils.isBlank(filename)) {
@@ -111,6 +115,7 @@ public class UserController {
         }
     }
 
+    @LoginRequired
     @RequestMapping(value = "/password", method = RequestMethod.POST)
     public String changePassword(Model model, String oldPass, String newPass, String newPass2) {
         if (StringUtils.isBlank(oldPass) || StringUtils.isBlank(newPass) || StringUtils.isBlank(newPass2)) {
