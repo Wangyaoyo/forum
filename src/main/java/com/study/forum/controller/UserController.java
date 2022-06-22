@@ -50,7 +50,7 @@ public class UserController {
     private String domain;
 
 
-    @RequestMapping(value = "/sitting", method = RequestMethod.GET)
+    @RequestMapping(value = "/setting", method = RequestMethod.GET)
     public String getSetting() {
         return "/site/setting";
     }
