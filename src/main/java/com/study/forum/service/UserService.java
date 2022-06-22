@@ -173,4 +173,10 @@ public class UserService {
         User user = userMapper.selectOne(userwrapper);
         return user;
     }
+
+    public int updateHeader(int id, String url){
+        UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+        wrapper.set("header_url", url).eq("id", id);
+        return userMapper.update(null, wrapper);
+    }
 }

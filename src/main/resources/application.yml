@@ -39,3 +39,4 @@ logging:
 community:
   path:
     domain: http://localhost:8080/
+    upload: D:/projectForWork/forum-data/
