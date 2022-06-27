@@ -1,6 +1,7 @@
 package com.study.forum.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.forum.mapper.CommentMapper;
 import com.study.forum.mapper.DiscussPostMapper;
@@ -97,5 +98,11 @@ public class DiscussPostService {
         wrapper.orderByDesc("create_time");
         commentMapper.selectPage(commentPage, wrapper);
         return commentPage;
+    }
+
+    public int updateCommentCount(int postId, int count){
+        UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
+        wrapper.set("comment_count", count).eq("id", postId);
+        return discussPostMapper.update(null, wrapper);
     }
 }
