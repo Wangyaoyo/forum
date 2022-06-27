@@ -2,9 +2,13 @@ package com.study.forum.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.study.forum.mapper.CommentMapper;
 import com.study.forum.mapper.DiscussPostMapper;
+import com.study.forum.pojo.Comment;
 import com.study.forum.pojo.DiscussPost;
 import com.study.forum.util.SensitiveFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
@@ -16,11 +20,17 @@ import org.springframework.web.util.HtmlUtils;
  */
 @Service
 public class DiscussPostService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DiscussPostService.class);
+
     @Autowired
     private DiscussPostMapper discussPostMapper;
 
     @Autowired
     private SensitiveFilter sensitiveFilter;
+
+    @Autowired
+    private CommentMapper commentMapper;
 
     /**
      * 分页：用户帖子
@@ -73,5 +83,19 @@ public class DiscussPostService {
 
     public DiscussPost getById(int id) {
         return discussPostMapper.selectById(id);
+    }
+
+    public Page<Comment> getPageComment(int entityType, int entityId, Integer current, int limit) {
+        if (current == null)
+            current = 0;
+        Page<Comment> commentPage = new Page<>(current, limit);
+        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
+        // 帖子 or 评论
+        wrapper.eq("entity_type", entityType);
+        // 帖子id or 评论id
+        wrapper.eq("entity_id", entityId);
+        wrapper.orderByDesc("create_time");
+        commentMapper.selectPage(commentPage, wrapper);
+        return commentPage;
     }
 }

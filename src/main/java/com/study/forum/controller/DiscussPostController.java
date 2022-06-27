@@ -2,10 +2,12 @@ package com.study.forum.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.forum.annotation.LoginRequired;
+import com.study.forum.pojo.Comment;
 import com.study.forum.pojo.DiscussPost;
 import com.study.forum.pojo.User;
 import com.study.forum.service.DiscussPostService;
 import com.study.forum.service.UserService;
+import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.HostHolder;
 import org.slf4j.Logger;
@@ -81,12 +83,40 @@ public class DiscussPostController {
 
 
     @RequestMapping(value = "/postdetail/{id}", method = RequestMethod.GET)
-    public String getDiscussPost(@PathVariable("id") int id, Model model) {
+    public String getDiscussPost(@PathVariable(value = "id", required = false) int id,
+                                 @RequestParam(value = "current", required = false) Integer current,
+                                 Model model) {
         DiscussPost post = discussPostService.getById(id);
         User user = userService.findUserById(post.getUserId());
         model.addAttribute("user", user);
         model.addAttribute("post", post);
-        // TODO: 查询帖子回复
+        // DONE: 查询帖子回复
+        Page<Comment> pageComment = discussPostService.getPageComment(CommunityConstant.ENTITY_TYPE_POST, id, current, 10);
+        List<Map<String, Object>> commentVoList = new ArrayList<>();
+        if (pageComment.getSize() > 0) {
+            for (Comment comment : pageComment.getRecords()) {
+                Map<String, Object> commentVo = new HashMap<>();
+                commentVo.put("comment", comment);
+                commentVo.put("user", userService.findUserById(comment.getUserId()));
+                Page<Comment> replyPage = discussPostService.getPageComment(CommunityConstant.ENTITY_TYPE_COMMENT, comment.getId(), 0, 10);
+                List<Map<String, Object>> replyVoList = new ArrayList<>();
+                if (replyPage.getSize() > 0) {
+                    for (Comment reply : replyPage.getRecords()) {
+                        Map<String, Object> replyVo = new HashMap<>();
+                        replyVo.put("reply", reply);
+                        replyVo.put("user", userService.getUserById(reply.getUserId()));
+                        replyVo.put("target", userService.getUserById(reply.getTargetId()));
+                        replyVoList.add(replyVo);
+                    }
+                }
+                commentVo.put("replys", replyVoList);
+                commentVo.put("replyCount", replyPage.getTotal());
+                commentVoList.add(commentVo);
+            }
+        }
+        model.addAttribute("comments", commentVoList);
+        model.addAttribute("commentCount", pageComment.getTotal());
+        model.addAttribute("page", pageComment);
         return "/site/discuss-detail";
     }
 }
