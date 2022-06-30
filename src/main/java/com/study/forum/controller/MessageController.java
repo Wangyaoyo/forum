@@ -101,6 +101,7 @@ public class MessageController {
         if (toId == null) {
             logger.error("私信对象为空！");
         }
+        int i = 3/0;
         Message message = new Message();
         message.setContent(content);
         message.setCreateTime(new Date());
