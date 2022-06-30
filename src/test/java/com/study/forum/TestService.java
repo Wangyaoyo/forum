@@ -51,6 +51,8 @@ public class TestService {
 
     @Test
     public void test03() {
-        userService.changePass(111, CommunityUtil.md5("1234"+"167f9"));
+//        userService.changePass(111, CommunityUtil.md5("1234"+"167f9"));
+          userService.changePass(112, CommunityUtil.md5("1234"+"90ad0"));
+
     }
 }

@@ -84,6 +84,7 @@
 							<div class="modal-body">
 								<form>
 									<div class="form-group">
+										<input type="hidden" th:value="${target.id}" id="toId">
 										<label for="recipient-name" class="col-form-label">发给：</label>
 										<input type="text" class="form-control" id="recipient-name" th:value="${target.username}">
 									</div>

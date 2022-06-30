@@ -174,15 +174,21 @@ public class UserService {
         return user;
     }
 
-    public int updateHeader(int id, String url){
+    public int updateHeader(int id, String url) {
         UpdateWrapper<User> wrapper = new UpdateWrapper<>();
         wrapper.set("header_url", url).eq("id", id);
         return userMapper.update(null, wrapper);
     }
 
-    public int changePass(int id, String password){
+    public int changePass(int id, String password) {
         UpdateWrapper<User> wrapper = new UpdateWrapper<>();
         wrapper.set("password", password).eq("id", id);
         return userMapper.update(null, wrapper);
     }
+
+//    public User findUserByUserName(String userName) {
+//        QueryWrapper<User> wrapper = new QueryWrapper<>();
+//        wrapper.eq("username", userName);
+//        userMapper.sel
+//    }
 }

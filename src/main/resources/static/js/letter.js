@@ -5,10 +5,27 @@ $(function(){
 
 function send_letter() {
 	$("#sendModal").modal("hide");
-	$("#hintModal").modal("show");
-	setTimeout(function(){
-		$("#hintModal").modal("hide");
-	}, 2000);
+
+	var toId = $("#toId").val();
+	var content = $("#message-text").val();
+	$.post(
+	    "/letter/send",
+	    {"toId":toId,"content":content},
+	    function(data) {
+	        data = $.parseJSON(data);
+	        if(data.code == 0) {
+	            $("#hintBody").text("发送成功!");
+	        } else {
+	            $("#hintBody").text(data.msg);
+	        }
+
+	        $("#hintModal").modal("show");
+            setTimeout(function(){
+                $("#hintModal").modal("hide");
+                location.reload();
+            }, 2000);
+	    }
+	);
 }
 
 function delete_msg() {

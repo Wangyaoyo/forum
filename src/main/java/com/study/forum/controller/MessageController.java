@@ -6,18 +6,16 @@ import com.study.forum.pojo.User;
 import com.study.forum.service.MessageService;
 import com.study.forum.service.UserService;
 import com.study.forum.util.HostHolder;
+import com.study.forum.util.SensitiveFilter;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author wy
@@ -26,6 +24,8 @@ import java.util.Map;
 @Controller
 @RequestMapping("/letter")
 public class MessageController {
+
+    private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
     @Autowired
     private HostHolder hostHolder;
@@ -36,19 +36,22 @@ public class MessageController {
     @Autowired
     private UserService userService;
 
+
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String messageList(@RequestParam(value = "current", required = false) Integer current,
                               Model model) {
-        Page<Message> page = messageService.getMessageList(hostHolder.getUser().getId(), current, 10);
+        int userId = hostHolder.getUser().getId();
+        Page<Message> page = messageService.getMessageList(userId, current, 10);
         List<Map<String, Object>> conversations = new ArrayList<>();
         if (page.getRecords() != null) {
             for (Message message : page.getRecords()) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("conversation", message);
-                map.put("target", userService.findUserById(message.getToId()));
+                int targetId = userId == message.getFromId() ? message.getToId() : message.getFromId();
+                map.put("target", userService.findUserById(targetId));
                 Page<Message> list = messageService.getConversation(message.getConversationId(), 1, 10);
                 map.put("letterCount", list.getTotal());
-                map.put("unreadCount", messageService.getUnReadMessage(message.getFromId(), message.getConversationId()));
+                map.put("unreadCount", messageService.getUnReadMessage(userId, message.getConversationId()));
                 conversations.add(map);
             }
         }
@@ -67,6 +70,11 @@ public class MessageController {
             for (Message message : page.getRecords()) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("fromUser", userService.findUserById(message.getFromId()));
+                // 修改私信状态为已读
+                if(hostHolder.getUser().getId() == message.getToId() && message.getStatus() == 0){
+                    message.setStatus(1);
+                    messageService.changeMessageStatus(message.getId(), message.getStatus());
+                }
                 map.put("letter", message);
                 letters.add(map);
             }
@@ -81,9 +89,27 @@ public class MessageController {
         String[] ids = conversationId.split("_");
         int id0 = Integer.parseInt(ids[0]);
         int id1 = Integer.parseInt(ids[1]);
-        if(hostHolder.getUser().getId() == id0){
+        if (hostHolder.getUser().getId() == id0) {
             return userService.findUserById(id1);
-        }else
+        } else
             return userService.findUserById(id0);
+    }
+
+    @RequestMapping(value = "/send", method = RequestMethod.POST)
+    @ResponseBody
+    public String insert(Integer toId, String content) {
+        if (toId == null) {
+            logger.error("私信对象为空！");
+        }
+        Message message = new Message();
+        message.setContent(content);
+        message.setCreateTime(new Date());
+        int fromId = hostHolder.getUser().getId();
+        message.setFromId(fromId);
+        message.setToId(toId);
+        String cid = fromId > toId ? toId + "_" + fromId : fromId + "_" + toId;
+        message.setConversationId(cid);
+        messageService.insertMessage(message);
+        return "0";
     }
 }
