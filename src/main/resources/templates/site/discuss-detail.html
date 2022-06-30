@@ -203,21 +203,21 @@
             <!-- 分页-->
             <nav class="mt-5" th:if="${page.getTotal()}>0">
                 <ul class="pagination justify-content-center">
-                    <li th:class="|page-item ${page.current==1?'disabled':''}|">
+                    <li th:class="|page-item ${page.getCurrent()==1?'disabled':''}|">
                         <a class="page-link" th:href="@{|/postdetail/${post.id}?current=1|}">首页</a>
                     </li>
-                    <li th:class="|page-item ${page.current==1?'disabled':''}|">
+                    <li th:class="|page-item ${page.getCurrent()==1?'disabled':''}|">
                         <a class="page-link"
                            th:href="@{|/postdetail/${post.id}?current=${page.getCurrent()-1}|}">上一页</a></li>
-                    <li th:class="|page-item ${i==page.current?'active':''}|"
+                    <li th:class="|page-item ${i==page.getCurrent()?'active':''}|"
                         th:each="i:${#numbers.sequence(1,page.getPages())}">
                         <a class="page-link" th:href="@{|/postdetail/${post.id}?current=${i}|}" th:text="${i}">1</a>
                     </li>
-                    <li th:class="|page-item ${page.current==page.getPages()?'disabled':''}|">
+                    <li th:class="|page-item ${page.getCurrent()==page.getPages()?'disabled':''}|">
                         <a class="page-link"
                            th:href="@{|/postdetail/${post.id}?current=${page.getCurrent()+1}|}">下一页</a>
                     </li>
-                    <li th:class="|page-item ${page.current==page.getPages()?'disabled':''}|">
+                    <li th:class="|page-item ${page.getCurrent()==page.getPages()?'disabled':''}|">
                         <a class="page-link" th:href="@{|/postdetail/${post.id}?current=${page.getPages()}|}">末页</a>
                     </li>
                 </ul>
