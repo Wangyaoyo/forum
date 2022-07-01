@@ -1,5 +1,7 @@
 package com.study.forum.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,9 +20,10 @@ import java.util.Date;
 @ToString
 @TableName("login_ticket")
 public class LoginTicket {
-    private int id;
-    private int userId;
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+    private Integer userId;
     private String ticket;
-    private int status;
+    private Integer status;
     private Date expired;
 }

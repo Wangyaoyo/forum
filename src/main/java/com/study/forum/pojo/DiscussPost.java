@@ -22,13 +22,13 @@ import java.util.Date;
 @TableName("discuss_post")
 public class DiscussPost {
     @TableId(type = IdType.AUTO)
-    private int id;
-    private int userId;
+    private Integer id;
+    private Integer userId;
     private String title;
     private String content;
-    private int type;
-    private int status;
+    private Integer type;
+    private Integer status;
     private Date createTime;
-    private int commentCount;
-    private double score;
+    private Integer commentCount;
+    private Double score;
 }

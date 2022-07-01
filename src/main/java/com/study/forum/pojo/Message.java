@@ -1,5 +1,7 @@
 package com.study.forum.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,11 +20,12 @@ import java.util.Date;
 @ToString
 @TableName("message")
 public class Message {
-    private int id;
-    private int fromId;
-    private int toId;
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+    private Integer fromId;
+    private Integer toId;
     private String conversationId;
     private String content;
-    private int status;
+    private Integer status;
     private Date createTime;
 }

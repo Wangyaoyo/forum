@@ -25,7 +25,7 @@ spring:
 mybatis-plus:
   mapper-locations: classpath:/mybatisplus/mapper/*.xml
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
 
 # 日志级别和输出路径：便于上线使用

@@ -1,5 +1,7 @@
 package com.study.forum.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,14 +20,15 @@ import java.util.Date;
 @ToString
 @TableName("comment")
 public class Comment {
-    private int id;
-    private int userId;
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+    private Integer userId;
     // 帖子or评论(该评论有可能是帖子的或评论的)
-    private int entityType;
+    private Integer entityType;
     // 帖子或者评论的id
-    private int entityId;
-    private int targetId;
+    private Integer entityId;
+    private Integer targetId;
     private String content;
-    private int status;
+    private Integer status;
     private Date createTime;
 }
