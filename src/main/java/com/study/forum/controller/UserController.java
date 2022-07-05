@@ -2,6 +2,7 @@ package com.study.forum.controller;
 
 import com.study.forum.annotation.LoginRequired;
 import com.study.forum.pojo.User;
+import com.study.forum.service.LikeService;
 import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.HostHolder;
@@ -38,6 +39,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     /* 头像存储的磁盘路径 */
     @Value("${community.path.upload}")
@@ -139,5 +143,22 @@ public class UserController {
             return "/site/setting";
         }else
             return "redirect:/index";
+    }
+
+    // 个人主页
+    @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId, Model model) {
+        User user = userService.findUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("该用户不存在!");
+        }
+
+        // 用户
+        model.addAttribute("user", user);
+        // 点赞数量
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount", likeCount);
+
+        return "/site/profile";
     }
 }

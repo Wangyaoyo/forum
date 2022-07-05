@@ -81,7 +81,8 @@
             <!-- 作者 -->
             <div class="media pb-3 border-bottom">
                 <a href="profile.html">
-                    <img th:src="${user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像">
+                    <img th:src="${user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像"
+                         th:href="@{|/user/profile/${user.id}|}">
                 </a>
                 <div class="media-body">
                     <div class="mt-0 text-warning" th:utext="${user.username}">寒江雪</div>
@@ -127,7 +128,7 @@
                 <li class="media pb-3 pt-3 mb-3 border-bottom" th:each="cvo:${comments}">
                     <a href="profile.html">
                         <img th:src="${cvo.user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header"
-                             alt="用户头像">
+                             alt="用户头像" th:href="@{|/user/profile/${cvo.user.id}|}">
                     </a>
                     <div class="media-body">
                         <div class="mt-0">
