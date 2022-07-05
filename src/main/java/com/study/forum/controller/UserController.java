@@ -2,8 +2,10 @@ package com.study.forum.controller;
 
 import com.study.forum.annotation.LoginRequired;
 import com.study.forum.pojo.User;
+import com.study.forum.service.FollowService;
 import com.study.forum.service.LikeService;
 import com.study.forum.service.UserService;
+import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +32,7 @@ import java.io.OutputStream;
  */
 @RequestMapping("/user")
 @Controller
-public class UserController {
+public class UserController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
@@ -42,6 +44,9 @@ public class UserController {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
 
     /* 头像存储的磁盘路径 */
     @Value("${community.path.upload}")
@@ -136,16 +141,16 @@ public class UserController {
             model.addAttribute("oldpassMsg", "原密码不正确！");
             return "/site/setting";
         }
-        int i = userService.changePass(user.getId(), CommunityUtil.md5(newPass+user.getSalt()));
+        int i = userService.changePass(user.getId(), CommunityUtil.md5(newPass + user.getSalt()));
         logger.info("id为:{}的用户正在修改密码", user.getId());
-        if(i <= 0){
+        if (i <= 0) {
             model.addAttribute("passwordMsg", "修改失败！");
             return "/site/setting";
-        }else
+        } else
             return "redirect:/index";
     }
 
-    // 个人主页
+    // 个人主页的显示
     @RequestMapping(path = "/profile/{userId}", method = RequestMethod.GET)
     public String getProfilePage(@PathVariable("userId") int userId, Model model) {
         User user = userService.findUserById(userId);
@@ -159,6 +164,20 @@ public class UserController {
         int likeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount", likeCount);
 
+        // 关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount", followeeCount);
+
+        // 粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount", followerCount);
+
+        // 当前用户对某用户是否已关注
+        boolean hasFollowed = false;
+        if (hostHolder.getUser() != null) {
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, userId);
+        }
+        model.addAttribute("hasFollowed", hasFollowed);
         return "/site/profile";
     }
 }
