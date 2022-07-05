@@ -22,6 +22,10 @@ spring:
         smtp:
           ssl:
             enable: true
+# redis相关配置
+  redis:
+    database: 3
+
 mybatis-plus:
   mapper-locations: classpath:/mybatisplus/mapper/*.xml
   configuration:
@@ -40,3 +44,5 @@ community:
   path:
     domain: http://localhost:8080/
     upload: D:/projectForWork/forum-data/
+
+
