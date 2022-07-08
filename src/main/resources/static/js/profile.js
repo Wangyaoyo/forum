@@ -11,6 +11,7 @@ function follow() {
 		    {"entityType":3,"entityId":$(btn).prev().val()},
 		    function(data) {
 		        data = $.parseJSON(data);
+		        console.log("data:" + data);
 		        if(data.code == 0) {
                     window.location.reload();
 		        } else {
