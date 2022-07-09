@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @version 1.0
  */
 @Mapper
+@Deprecated
 public interface LoginTicketMapper extends BaseMapper<LoginTicket> {
 
 }

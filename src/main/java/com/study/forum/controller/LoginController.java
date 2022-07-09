@@ -4,10 +4,13 @@ import com.google.code.kaptcha.Producer;
 import com.study.forum.pojo.User;
 import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityConstant;
+import com.study.forum.util.CommunityUtil;
+import com.study.forum.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -23,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author wy
@@ -38,6 +42,10 @@ public class LoginController {
 
     @Autowired
     Producer kaptchaProducer;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
 
     /* 注册页面 */
     @RequestMapping(value = "/register", method = RequestMethod.GET)
@@ -87,14 +95,25 @@ public class LoginController {
     }
 
     @RequestMapping(value = "/kaptcha")
-    public void getKaptcha(HttpServletResponse response, HttpSession session) {
+    public void getKaptcha(HttpServletResponse response/*, HttpSession session*/) {
         // 生成验证码和图片
         String text = kaptchaProducer.createText();
         BufferedImage image = kaptchaProducer.createImage(text);
 
         // 保存进session
-        session.setAttribute("kaptcha", text);
+        // session.setAttribute("kaptcha", text);
+
+        /* 使用redis重构(kaptchaOwner标识每一个用户，此时用户未登录，不能用userId标识)  */
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        String kaptchaKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        // 过期时间60s
+        cookie.setMaxAge(60);
+        response.addCookie(cookie);
         response.setContentType("image/png");
+        // 存入并设置过期时间
+        redisTemplate.opsForValue().set(kaptchaKey, text, 60, TimeUnit.SECONDS);
+
         try {
             OutputStream os = response.getOutputStream();
             ImageIO.write(image, "png", os);
@@ -106,12 +125,19 @@ public class LoginController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String login(String username, String password, String code,
                         boolean rememberme,
-                        HttpSession session,
+//                        HttpSession session,
+                        @CookieValue("kaptchaOwner") String kaptchaOwner,
                         HttpServletResponse response,
                         Model model) {
         // 校验code
-        String sessionCode = (String) session.getAttribute("kaptcha");
-        if (StringUtils.isBlank(sessionCode) || StringUtils.isBlank(code) || !sessionCode.equalsIgnoreCase(code)) {
+        // String sessionCode = (String) session.getAttribute("kaptcha");
+
+        /* redis重构：验证码 */
+        String kaptchaKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        String kaptcha = (String) redisTemplate.opsForValue().get(kaptchaKey);
+
+
+        if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
             model.addAttribute("codeMsg", "验证码不正确");
             logger.info("验证码不正确");
             return "/site/login";

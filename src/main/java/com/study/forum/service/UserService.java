@@ -9,9 +9,11 @@ import com.study.forum.pojo.User;
 import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.MailClient;
+import com.study.forum.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -33,15 +35,46 @@ public class UserService {
     @Autowired
     private MailClient mailClient;
 
+//    @Autowired
+//    private LoginTicketMapper loginTicketMapper;
+
     @Autowired
-    private LoginTicketMapper loginTicketMapper;
+    private RedisTemplate redisTemplate;
 
     @Value("${community.path.domain}")
     private String domain;
 
     public User findUserById(int userId) {
-        User user = userMapper.selectById(userId);
+        User user = getUserCache(userId);
+        if (user == null) {
+            user = initCache(userId);
+        }
         return user;
+    }
+
+    /*  从缓存中获取数据  */
+    private User getUserCache(int userId) {
+        String userKey = RedisKeyUtil.getUserKey(userId);
+        return (User) redisTemplate.opsForValue().get(userKey);
+    }
+
+    /*  缓存中没有从数据库查询并设置缓存  */
+    private User initCache(int userId) {
+        // 从数据库中查询
+        QueryWrapper<User> userwrapper = new QueryWrapper<>();
+        userwrapper.eq("id", userId);
+        User user = userMapper.selectOne(userwrapper);
+        // 设置到缓存
+        String userKey = RedisKeyUtil.getUserKey(userId);
+        redisTemplate.opsForValue().set(userKey, user);
+
+        return user;
+    }
+
+    /* 数据变更时清除缓存数据  */
+    private void clearCache(int userId) {
+        String userKey = RedisKeyUtil.getUserKey(userId);
+        redisTemplate.delete(userKey);
     }
 
     public Map<String, Object> register(User user) {
@@ -109,6 +142,7 @@ public class UserService {
         } else if (code.equals(user.getActivationCode())) {
             user.setStatus(1);
             userMapper.updateById(user);
+            clearCache(user.getId());       // 数据修改，清除redis缓存
             return CommunityConstant.ACTIVATION_SUCCESS;
         } else {
             return CommunityConstant.ACTIVATION_FAILURE;
@@ -147,48 +181,53 @@ public class UserService {
         loginTicket.setTicket(CommunityUtil.generateUUID());
         loginTicket.setStatus(0);
         loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
-        loginTicketMapper.insert(loginTicket);
+//        loginTicketMapper.insert(loginTicket);
+
+        // 使用redis存储ticket
+        String ticketKey = RedisKeyUtil.getTicketKey(loginTicket.getTicket());
+        redisTemplate.opsForValue().set(ticketKey, loginTicket);
+
         map.put("ticket", loginTicket.getTicket());
         return map;
     }
 
     public void logout(String ticket) {
-        // 划重点：很好用
+        /* 划重点：很好用
         UpdateWrapper<LoginTicket> wrapper = new UpdateWrapper<>();
         wrapper.set("status", 1).eq("ticket", ticket);
         loginTicketMapper.update(null, wrapper);
+         */
+        String ticketKey = RedisKeyUtil.getTicketKey(ticket);
+        LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(ticketKey);
+        // 修改状态后重新存入
+        loginTicket.setStatus(1);
+        redisTemplate.opsForValue().set(ticketKey, loginTicket);
     }
 
     public LoginTicket getLoginTicketByTicket(String ticket) {
+        /*
         QueryWrapper<LoginTicket> loginwrapper = new QueryWrapper<>();
         loginwrapper.eq("ticket", ticket);
         LoginTicket loginTicket = loginTicketMapper.selectOne(loginwrapper);
-
-        return loginTicket;
-    }
-
-    public User getUserById(int id) {
-        QueryWrapper<User> userwrapper = new QueryWrapper<>();
-        userwrapper.eq("id", id);
-        User user = userMapper.selectOne(userwrapper);
-        return user;
+         */
+        String ticketKey = RedisKeyUtil.getTicketKey(ticket);
+        return (LoginTicket) redisTemplate.opsForValue().get(ticketKey);
     }
 
     public int updateHeader(int id, String url) {
         UpdateWrapper<User> wrapper = new UpdateWrapper<>();
         wrapper.set("header_url", url).eq("id", id);
-        return userMapper.update(null, wrapper);
+        int rows = userMapper.update(null, wrapper);
+        clearCache(id);
+        return rows;
     }
 
     public int changePass(int id, String password) {
         UpdateWrapper<User> wrapper = new UpdateWrapper<>();
         wrapper.set("password", password).eq("id", id);
-        return userMapper.update(null, wrapper);
+        int rows = userMapper.update(null, wrapper);
+        clearCache(id);
+        return rows;
     }
 
-//    public User findUserByUserName(String userName) {
-//        QueryWrapper<User> wrapper = new QueryWrapper<>();
-//        wrapper.eq("username", userName);
-//        userMapper.sel
-//    }
 }

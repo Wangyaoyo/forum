@@ -1,9 +1,7 @@
 package com.study.forum.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.forum.pojo.User;
 import com.study.forum.util.CommunityConstant;
-import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
