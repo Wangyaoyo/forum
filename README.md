@@ -16,3 +16,9 @@
   User的存储：
     以前：根据id在数据库查询
     现在：根据id在redis查询
+  
+
+## spring 整合kafka
+- 引入依赖
+- 配置server、 consumer
+- 访问kafka

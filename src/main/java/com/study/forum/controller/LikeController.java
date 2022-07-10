@@ -1,6 +1,9 @@
 package com.study.forum.controller;
 
+import com.study.forum.event.EventProducer;
+import com.study.forum.pojo.Event;
 import com.study.forum.service.LikeService;
+import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.HostHolder;
 import org.attoparser.ParsingCommentMarkupUtil;
@@ -20,7 +23,7 @@ import java.util.Map;
  * @version 1.0
  */
 @Controller
-public class LikeController {
+public class LikeController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(LikeController.class);
 
@@ -30,9 +33,12 @@ public class LikeController {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(value = "/like", method = RequestMethod.POST)
     @ResponseBody
-    public String like(int entityId, int entityType, int entityUserId) {
+    public String like(int entityId, int entityType, int entityUserId, int postId) {
         Integer userId = hostHolder.getUser().getId();
         likeService.like(entityType, entityId, entityUserId);
         long count = likeService.count(entityType, entityId);
@@ -41,6 +47,19 @@ public class LikeController {
         map.put("likeCount", count);
         map.put("likeStatus", islike);
 
+        if(islike == 1){
+            // 触发一个Event事件
+            Event event = new Event()
+                    .setTopic(TOPIC_LIKE)
+                    .setUserId(userId)
+                    .setEntityId(entityId)
+                    .setEntityType(entityType)
+                    .setEntityUserId(entityUserId)
+                    .setData("postId", postId);
+
+            // 发布一个事件
+            eventProducer.sendEvent(event);
+        }
         return CommunityUtil.getJSONString(0, null, map);
 
     }

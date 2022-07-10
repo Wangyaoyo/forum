@@ -5,6 +5,7 @@ import com.study.forum.pojo.Message;
 import com.study.forum.pojo.User;
 import com.study.forum.service.MessageService;
 import com.study.forum.service.UserService;
+import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.HostHolder;
 import com.study.forum.util.SensitiveFilter;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +24,7 @@ import java.util.*;
  */
 @Controller
 @RequestMapping("/letter")
-public class MessageController {
+public class MessageController implements CommunityConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
@@ -72,7 +73,7 @@ public class MessageController {
                 map.put("fromUser", userService.findUserById(message.getFromId()));
                 // 修改私信状态为已读
                 if(hostHolder.getUser().getId() == message.getToId() && message.getStatus() == 0){
-                    message.setStatus(1);
+                    message.setStatus(MESSAGE_HAS_READ);
                     messageService.changeMessageStatus(message.getId(), message.getStatus());
                 }
                 map.put("letter", message);

@@ -26,6 +26,14 @@ spring:
   redis:
     database: 3
 
+# 配置kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: community-consumer-group
+      enable-auto-commit: true      # 是否自动提交
+      auto-commit-interval: 3000    #3s自动提交一次
+
 mybatis-plus:
   mapper-locations: classpath:/mybatisplus/mapper/*.xml
   configuration:
@@ -44,5 +52,6 @@ community:
   path:
     domain: http://localhost:8080/
     upload: D:/projectForWork/forum-data/
+
 
 

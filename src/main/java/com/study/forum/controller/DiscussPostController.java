@@ -114,7 +114,7 @@ public class DiscussPostController implements CommunityConstant {
                     for (Comment reply : replyPage.getRecords()) {
                         Map<String, Object> replyVo = new HashMap<>();
                         replyVo.put("reply", reply);
-                        replyVo.put("user", userService.findUserById(reply.getUserId()));
+                         replyVo.put("user", userService.findUserById(reply.getUserId()));
                         replyVo.put("target", userService.findUserById(reply.getTargetId()));
                         long replyCount = likeService.count(ENTITY_TYPE_COMMENT, reply.getEntityId());
                         int replyislike = likeService.islike(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, reply.getEntityId());

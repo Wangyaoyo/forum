@@ -1,5 +1,7 @@
 package com.study.forum.controller;
 
+import com.study.forum.event.EventProducer;
+import com.study.forum.pojo.Event;
 import com.study.forum.pojo.User;
 import com.study.forum.service.FollowService;
 import com.study.forum.service.UserService;
@@ -22,7 +24,7 @@ import java.util.Map;
  * @version 1.0
  */
 @Controller
-public class FollowController {
+public class FollowController implements CommunityConstant{
 
     @Autowired
     private HostHolder hostHolder;
@@ -33,11 +35,25 @@ public class FollowController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @RequestMapping(value = "/follow", method = RequestMethod.POST)
     @ResponseBody
     public String follow(int entityType, int entityId) {
         Integer userId = hostHolder.getUser().getId();
         followService.follow(userId, entityType, entityId);
+
+        // 触发一个Event事件
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(userId)
+                .setEntityId(entityId)
+                .setEntityType(entityType)
+                .setEntityUserId(entityId) ;
+
+        // 发布一个事件
+        eventProducer.sendEvent(event);
         return CommunityUtil.getJSONString(0, "已关注");
     }
 
