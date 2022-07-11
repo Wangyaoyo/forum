@@ -22,3 +22,10 @@
 - 引入依赖
 - 配置server、 consumer
 - 访问kafka
+
+## kafka完成消息通知功能（在一个用户对另一个用户点赞、评论、关注等操作时，系统通知接收消息的用户）
+- 开发Event对象
+- 开发Producer和Consumer对象
+- 在点赞、评论、关注发生时，封装Event,并用Producer发送消息，将消息存入消息队列
+- Consumer从消息队列中获得Event对象，封装成Message存入数据库
+- 

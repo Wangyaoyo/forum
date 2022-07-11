@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.forum.mapper.MessageMapper;
 import com.study.forum.pojo.Message;
+import com.study.forum.util.CommunityConstant;
+import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.SensitiveFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -21,7 +24,7 @@ import java.util.List;
  * @version 1.0
  */
 @Service
-public class MessageService {
+public class MessageService implements CommunityConstant {
     private static final Logger logger = LoggerFactory.getLogger(MessageService.class);
 
     @Autowired
@@ -100,6 +103,71 @@ public class MessageService {
         UpdateWrapper<Message> wrapper = new UpdateWrapper<>();
         wrapper.set("status", status).eq("id", id);
         messageMapper.update(null, wrapper);
+    }
+
+    /**
+     * 通知的消息总数(或某一类通知的未读/已读消息)
+     *
+     * @param userId
+     * @param topic
+     * @param read
+     * @return
+     */
+    public int findNoticeCount(int userId, String topic, int read) {
+        QueryWrapper<Message> wrapper = new QueryWrapper<>();
+        wrapper.eq("to_id", userId)
+                .eq("from_id", 1);
+        if (!StringUtils.isBlank(topic)) {
+            wrapper.eq("conversation_id", topic);
+        }
+        if (read == MESSAGE_UNDELETED) {
+            wrapper.ne("status", MESSAGE_UNDELETED);
+        } else {
+            wrapper.eq("status", read);
+        }
+        return messageMapper.selectCount(wrapper);
+    }
+
+
+    /**
+     * 查询某类通知的最近一条通知
+     *
+     * @param userId
+     * @param topic
+     * @return
+     */
+    public Message findLatestNotice(int userId, String topic) {
+        QueryWrapper<Message> wrapper = new QueryWrapper<>();
+        wrapper.eq("to_id", userId)
+                .ne("status", CommunityConstant.MESSAGE_UNDELETED)
+                .eq("from_id", 1)
+                .eq("conversation_id", topic)
+                .orderByDesc("id")
+                .last("limit 1");
+        Message message = messageMapper.selectOne(wrapper);
+        return message;
+    }
+
+    /**
+     * 查询某个主题所包含的通知列表(未读)
+     *
+     * @param userId
+     * @param topic
+     * @return
+     */
+    public Page<Message> selectNotices(int userId, String topic, Integer offset, Integer limit) {
+        if (offset == null) {
+            offset = 0;
+        }
+        Page<Message> messagePage = new Page<>(offset, limit);
+        QueryWrapper<Message> wrapper = new QueryWrapper<>();
+        wrapper.eq("to_id", userId)
+                .ne("status", MESSAGE_UNDELETED)
+                .eq("from_id", 1)
+                .eq("conversation_id", topic)
+                .orderByDesc("id");
+        messageMapper.selectPage(messagePage, wrapper);
+        return messagePage;
     }
 
 }

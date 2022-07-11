@@ -76,4 +76,9 @@ public interface CommunityConstant {
      * 消息已读
      */
     int MESSAGE_HAS_READ = 1;
+
+    /**
+     * 消息未删除
+     */
+    int MESSAGE_UNDELETED = 2;
 }

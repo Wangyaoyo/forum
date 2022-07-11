@@ -28,7 +28,9 @@
 								<a class="nav-link" href="../index.html">首页</a>
 							</li>
 							<li class="nav-item ml-3 btn-group-vertical">
-								<a class="nav-link position-relative" href="letter.html">消息<span class="badge badge-danger">12</span></a>
+								<a class="nav-link position-relative active" th:href="@{/letter/notice/list}">
+									系统通知<span class="badge badge-danger" th:text="${noticeUnreadCount}" th:if="${noticeUnreadCount!=0?noticeUnreadCount:''}"></span>
+								</a>
 							</li>
 							<li class="nav-item ml-3 btn-group-vertical">
 								<a class="nav-link" href="register.html">注册</a>
@@ -71,7 +73,9 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link position-relative" href="notice.html">系统通知<span class="badge badge-danger">27</span></a>
+							<a class="nav-link position-relative active" th:href="@{/letter/notice/list}">
+								系统通知<span class="badge badge-danger" th:text="${noticeUnreadCount}" th:if="${noticeUnreadCount!=0}"></span>
+							</a>
 						</li>
 					</ul>
 					<button type="button" class="btn btn-primary btn-sm position-absolute rt-0" data-toggle="modal" data-target="#sendModal">发私信</button>
