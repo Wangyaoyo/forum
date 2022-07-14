@@ -63,6 +63,11 @@ public interface CommunityConstant {
     String TOPIC_FOLLOW = "follow";
 
     /**
+     * 主题：发布帖子
+     */
+    String TOPIC_PUBLISH = "publish";
+
+    /**
      * 系统通知
      */
     int SYSTEM_USER_ID = 1;
@@ -81,4 +86,9 @@ public interface CommunityConstant {
      * 消息未删除
      */
     int MESSAGE_UNDELETED = 2;
+
+    /**
+     * 每页最大数据条数
+     */
+    int PAGE_LIMIT = 10;
 }

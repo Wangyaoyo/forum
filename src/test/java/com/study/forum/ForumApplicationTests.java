@@ -6,15 +6,16 @@ import com.study.forum.mapper.DiscussPostMapper;
 import com.study.forum.pojo.DiscussPost;
 import com.study.forum.pojo.User;
 import com.study.forum.service.UserService;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
+import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest
+@RunWith(SpringRunner.class)
 class ForumApplicationTests {
     private static final Logger logger = LoggerFactory.getLogger(ForumApplicationTests.class);
 

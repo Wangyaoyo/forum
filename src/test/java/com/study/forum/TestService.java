@@ -4,23 +4,23 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.forum.mapper.MessageMapper;
 import com.study.forum.pojo.Comment;
 import com.study.forum.pojo.Message;
-import com.study.forum.pojo.User;
-import com.study.forum.service.CommentService;
 import com.study.forum.service.DiscussPostService;
 import com.study.forum.service.MessageService;
 import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityUtil;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
 
 /**
  * @author wy
  * @version 1.0
  */
 @SpringBootTest
+@RunWith(SpringRunner.class)
 public class TestService {
 
     @Autowired

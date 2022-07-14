@@ -22,10 +22,31 @@
 - 引入依赖
 - 配置server、 consumer
 - 访问kafka
+- 启动kafka(进入kafka目录)
+bin\windows\kafka-server-start.bat config\server.properties
+  
+- 启动zookeeper 
+bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+  
 
 ## kafka完成消息通知功能（在一个用户对另一个用户点赞、评论、关注等操作时，系统通知接收消息的用户）
 - 开发Event对象
 - 开发Producer和Consumer对象
 - 在点赞、评论、关注发生时，封装Event,并用Producer发送消息，将消息存入消息队列
 - Consumer从消息队列中获得Event对象，封装成Message存入数据库
-- 
+
+
+## EasticSerach使用
+- 下载安装修改配置文件配置环境变量
+- 安装对应版本的中文分词插件并解压到plugins目录下(github)
+- 下载postman工具(非必要)
+- 启动es: 运行elasticsearch.bat 
+  - 可用命令方式访问服务器
+  - 可直接在postman工具发送post请求
+- Spring整合es
+  - 引入依赖
+  - 配置es: cluster-name   cluster-nodes
+  - 两个类：ElasticsearchTemplate  ElasticsearchRepository
+  - 通过注解配置 @Document... : 建立和ES的联系
+  - 创建接口继承es的接口
+  - 测试类测试

@@ -2,8 +2,11 @@ package com.study.forum.event;
 
 import com.alibaba.fastjson.JSONObject;
 import com.study.forum.mapper.MessageMapper;
+import com.study.forum.pojo.DiscussPost;
 import com.study.forum.pojo.Event;
 import com.study.forum.pojo.Message;
+import com.study.forum.service.DiscussPostService;
+import com.study.forum.service.ElasticSearchService;
 import com.study.forum.util.CommunityConstant;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -27,6 +30,13 @@ public class EventConsumer implements CommunityConstant {
 
     @Autowired
     private MessageMapper messageMapper;
+
+    @Autowired
+    private ElasticSearchService elasticSearchService;
+
+    @Autowired
+    private DiscussPostService discussPostService;
+
 
     /*
         消息接收者接收指定事件，将事件封装成 Message 存入数据库
@@ -65,5 +75,26 @@ public class EventConsumer implements CommunityConstant {
         }
         message.setContent(JSONObject.toJSONString(content));
         messageMapper.insert(message);
+    }
+
+    /*
+        消息接收者接收指定事件，将帖子存入ES服务器
+     */
+    @KafkaListener(topics = {TOPIC_PUBLISH})
+    public void handleAddDiscussPost(ConsumerRecord record) {
+        // 判空参数
+        if (record == null || record.value() == null) {
+            return;
+        }
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null) {
+            logger.error("消息格式错误！");
+            return;
+        }
+
+        // 在es中存入post数据
+        DiscussPost post = discussPostService.getById(event.getEntityId());
+        elasticSearchService.addPost(post);
+
     }
 }

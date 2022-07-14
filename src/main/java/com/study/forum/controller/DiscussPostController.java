@@ -2,8 +2,10 @@ package com.study.forum.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.forum.annotation.LoginRequired;
+import com.study.forum.event.EventProducer;
 import com.study.forum.pojo.Comment;
 import com.study.forum.pojo.DiscussPost;
+import com.study.forum.pojo.Event;
 import com.study.forum.pojo.User;
 import com.study.forum.service.DiscussPostService;
 import com.study.forum.service.LikeService;
@@ -41,6 +43,9 @@ public class DiscussPostController implements CommunityConstant {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private EventProducer eventProducer;
 
     @RequestMapping(value = "/index", method = RequestMethod.GET)
     public String pageData(@RequestParam(value = "current", required = false) Integer current, Model model) {
@@ -84,6 +89,16 @@ public class DiscussPostController implements CommunityConstant {
         discussPost.setUserId(user.getId());
         discussPost.setCreateTime(new Date());
         discussPostService.insert(discussPost);
+
+        // 构造Event对象，异步存入ES服务器
+        Event event = new Event();
+        event.setUserId(user.getId())
+                .setTopic(TOPIC_PUBLISH)
+                .setEntityId(discussPost.getId())
+                .setEntityType(ENTITY_TYPE_POST);
+
+        eventProducer.sendEvent(event);
+
         return CommunityUtil.getJSONString(0, "发布成功！");
     }
 
