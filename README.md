@@ -50,3 +50,21 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
   - 通过注解配置 @Document... : 建立和ES的联系
   - 创建接口继承es的接口
   - 测试类测试
+
+
+
+## 权限控制
+- 废弃之前的 拦截器登录检查
+- 认证
+  - 绕过springsecurity认证流程，采用系统原有的认证方案
+- 授权
+  - 对需要控制的请求配置
+- CSRF配置
+  - 防止CSRF攻击
+  
+
+### 权限控制实现
+- 引入依赖
+- 创建配置类
+
+

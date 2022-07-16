@@ -47,26 +47,6 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
-    @RequestMapping(value = "/index", method = RequestMethod.GET)
-    public String pageData(@RequestParam(value = "current", required = false) Integer current, Model model) {
-        Page<DiscussPost> page = discussPostService.getPageDiscussPosts(0, current, 10);
-        List<Map<String, Object>> discussPosts = new ArrayList<>();
-        if (page != null) {
-            for (DiscussPost post : page.getRecords()) {
-                Map<String, Object> map = new HashMap<>();
-                User user = userService.findUserById(post.getUserId());
-                map.put("user", user);
-                map.put("post", post);
-                long count = likeService.count(ENTITY_TYPE_POST, post.getId());
-                map.put("likeCount", count);
-                discussPosts.add(map);
-            }
-        }
-        model.addAttribute("discussPosts", discussPosts);
-        model.addAttribute("page", page);
-        return "index";
-    }
-
     @GetMapping("/discussposts/{userId}")
     public int getRowNumbers(@PathVariable("userId") int userId) {
         return discussPostService.getDiscussPostRows(userId);

@@ -2,7 +2,6 @@ package com.study.forum.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.study.forum.mapper.LoginTicketMapper;
 import com.study.forum.mapper.UserMapper;
 import com.study.forum.pojo.LoginTicket;
 import com.study.forum.pojo.User;
@@ -11,9 +10,11 @@ import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.MailClient;
 import com.study.forum.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.recycler.Recycler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -25,7 +26,7 @@ import java.util.*;
  * @version 1.0
  */
 @Service
-public class UserService {
+public class UserService implements CommunityConstant {
     @Autowired
     private UserMapper userMapper;
 
@@ -230,4 +231,30 @@ public class UserService {
         return rows;
     }
 
+    public User findUserByName(String name) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username", name);
+        return userMapper.selectOne(wrapper);
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities(int userId) {
+        User user = this.findUserById(userId);
+
+        List<GrantedAuthority> list = new ArrayList<>();
+        list.add(new GrantedAuthority() {
+
+            @Override
+            public String getAuthority() {
+                switch (user.getType()) {
+                    case 1:
+                        return AUTHORITY_ADMIN;
+                    case 2:
+                        return AUTHORITY_MODERATOR;
+                    default:
+                        return AUTHORITY_USER;
+                }
+            }
+        });
+        return list;
+    }
 }

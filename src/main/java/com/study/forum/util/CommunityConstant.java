@@ -91,4 +91,19 @@ public interface CommunityConstant {
      * 每页最大数据条数
      */
     int PAGE_LIMIT = 10;
+
+    /**
+     * 用户权限
+     */
+    String AUTHORITY_USER = "user";
+
+    /**
+     * 管理员权限
+     */
+    String AUTHORITY_ADMIN = "admin";
+
+    /**
+     * 版主权限
+     */
+    String AUTHORITY_MODERATOR = "moderator";
 }

@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -167,6 +168,8 @@ public class LoginController {
         logger.info("ticket为：{}欲登出！", ticket);
         userService.logout(ticket);
         logger.info("登出成功！");
+        /* 清理security的上下文环境 */
+        SecurityContextHolder.clearContext();
         return "redirect:/login";
     }
 }
