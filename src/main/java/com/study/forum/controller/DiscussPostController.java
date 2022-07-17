@@ -201,7 +201,6 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST);
 
         eventProducer.sendEvent(event);
-//        return "redirect:/index/";
         return CommunityUtil.getJSONString(0);
     }
 

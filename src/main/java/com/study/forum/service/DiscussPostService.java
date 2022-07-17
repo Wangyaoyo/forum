@@ -106,6 +106,12 @@ public class DiscussPostService {
         return discussPostMapper.update(null, wrapper);
     }
 
+    /**
+     * 修改帖子状态：普通/置顶
+     * @param id
+     * @param type
+     * @return
+     */
     public int updateType(int id, int type) {
         UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
         wrapper.set("type", type).eq("id", id);
@@ -115,6 +121,12 @@ public class DiscussPostService {
         return update;
     }
 
+    /**
+     * 修改帖子状态： 正常/精华/拉黑
+     * @param id
+     * @param status
+     * @return
+     */
     public int updateStatus(int id, int status) {
         UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
         wrapper.set("status", status).eq("id", id);

@@ -110,8 +110,6 @@ public class EventConsumer implements CommunityConstant {
             return;
         }
 
-        // 在数据库中修改帖子状态
-//        discussPostService.updateStatus(event.getEntityId(), POST_STATUS_BLACK);
         // 在ES服务器中删除帖子
         elasticSearchService.deletePost(event.getEntityId());
     }

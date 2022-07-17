@@ -70,5 +70,12 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
 
 ## 置顶、加精、删除
 - 引入thymeleaf+security5包
+- 开发service
+- 开发controller
+  - 触发一个event事件
+  - 在Consumer中添加监听一个主题的方法
+- 为前端返回json状态码
+- thymeleaf结合seurity包解决权限控制问题
+  
 
 
