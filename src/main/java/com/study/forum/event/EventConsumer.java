@@ -68,8 +68,8 @@ public class EventConsumer implements CommunityConstant {
 
         // 将event中的map数据封装到message的content中，方便前端的消息提醒
         Map<String, Object> data = event.getData();
-        if(!data.isEmpty()){
-            for(String key : data.keySet()){
+        if (!data.isEmpty()) {
+            for (String key : data.keySet()) {
                 content.put(key, data.get(key));
             }
         }
@@ -96,5 +96,23 @@ public class EventConsumer implements CommunityConstant {
         DiscussPost post = discussPostService.getById(event.getEntityId());
         elasticSearchService.addPost(post);
 
+    }
+
+    @KafkaListener(topics = {TOPIC_DELETE})
+    public void handleDeleteDiscussPost(ConsumerRecord record) {
+        // 判空参数
+        if (record == null || record.value() == null) {
+            return;
+        }
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null) {
+            logger.error("消息格式错误！");
+            return;
+        }
+
+        // 在数据库中修改帖子状态
+//        discussPostService.updateStatus(event.getEntityId(), POST_STATUS_BLACK);
+        // 在ES服务器中删除帖子
+        elasticSearchService.deletePost(event.getEntityId());
     }
 }

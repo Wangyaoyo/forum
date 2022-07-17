@@ -66,5 +66,9 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
 ### 权限控制实现
 - 引入依赖
 - 创建配置类
+- 开发权限管理模块
+
+## 置顶、加精、删除
+- 引入thymeleaf+security5包
 
 

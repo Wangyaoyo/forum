@@ -42,6 +42,10 @@ public class ElasticSearchService implements CommunityConstant {
     private ElasticsearchTemplate elasticTemplate;
 
 
+    /**
+     * 更新也用此方法
+     * @param post
+     */
     public void addPost(DiscussPost post) {
         discussRepository.save(post);
     }

@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 
 
 /**
+ * 管理员：nowcoder11 密码：123456
  * @author wy
  * @version 1.0
  */
@@ -54,6 +55,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Comm
                         AUTHORITY_ADMIN,
                         AUTHORITY_MODERATOR
                 )
+                /* 版主可以置顶和加精 */
+                .antMatchers(
+                        "/top",
+                        "/wonderful")
+                .hasAnyAuthority(
+                        AUTHORITY_MODERATOR
+                )
+                /* 管理员具有删帖的权限 */
+                .antMatchers("/delete")
+                .hasAnyAuthority(AUTHORITY_ADMIN)
                 // 放行除此之外的所有请求
                 .anyRequest().permitAll()
                 // 禁用csrf

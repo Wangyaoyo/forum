@@ -100,9 +100,28 @@ public class DiscussPostService {
         return commentPage;
     }
 
-    public int updateCommentCount(int postId, int count){
+    public int updateCommentCount(int postId, int count) {
         UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
         wrapper.set("comment_count", count).eq("id", postId);
         return discussPostMapper.update(null, wrapper);
     }
+
+    public int updateType(int id, int type) {
+        UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
+        wrapper.set("type", type).eq("id", id);
+        int update = discussPostMapper.update(null, wrapper);
+        if(update == 1)
+            logger.info("帖子id为{}的帖子修改类型为：{}", id, type);
+        return update;
+    }
+
+    public int updateStatus(int id, int status) {
+        UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
+        wrapper.set("status", status).eq("id", id);
+        int update = discussPostMapper.update(null, wrapper);
+        if(update == 1)
+            logger.info("帖子id为{}的帖子修改状态为：{}", id, status);
+        return update;
+    }
+
 }

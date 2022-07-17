@@ -68,6 +68,11 @@ public interface CommunityConstant {
     String TOPIC_PUBLISH = "publish";
 
     /**
+     * 主题：删除帖子
+     */
+    String TOPIC_DELETE = "delete";
+
+    /**
      * 系统通知
      */
     int SYSTEM_USER_ID = 1;
@@ -106,4 +111,29 @@ public interface CommunityConstant {
      * 版主权限
      */
     String AUTHORITY_MODERATOR = "moderator";
+
+    /**帖子类型
+     * 0：普通
+     */
+    int POST_TYPE_NORMAL = 0;
+
+    /**帖子类型
+     * 1：置顶
+     */
+    int POST_TYPE_TOP = 1;
+
+    /**帖子状态
+     * 0：正常
+     */
+    int POST_STATUS_NORMAL = 0;
+
+    /**帖子状态
+     * 1：精华
+     */
+    int POST_STATUS_GOOD = 1;
+
+    /**帖子状态
+     * 2：拉黑
+     */
+    int POST_STATUS_BLACK = 2;
 }

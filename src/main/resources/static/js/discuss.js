@@ -1,4 +1,4 @@
-function like(btn, entityType, entityId, entityUserId) {
+ function like(btn, entityType, entityId, entityUserId) {
     // post请求
     $.post(
         "/like",
@@ -15,3 +15,57 @@ function like(btn, entityType, entityId, entityUserId) {
         }
     );
 }
+
+ $(function(){
+     $("#topBtn").click(setTop);
+     $("#wonderfulBtn").click(setWonderful);
+     $("#deleteBtn").click(setDelete);
+ });
+
+ // 置顶
+ function setTop() {
+     $.post(
+         "/top",
+         {"id":$("#postId").val()},
+         function(data) {
+             data = $.parseJSON(data);
+             if(data.code == 0) {
+                 $("#topBtn").attr("disabled", "disabled");
+             } else {
+                 alert(data.msg);
+             }
+         }
+     );
+ }
+
+ // 加精
+ function setWonderful() {
+     $.post(
+         "/wonderful",
+         {"id":$("#postId").val()},
+         function(data) {
+             data = $.parseJSON(data);
+             if(data.code == 0) {
+                 $("#wonderfulBtn").attr("disabled", "disabled");
+             } else {
+                 alert(data.msg);
+             }
+         }
+     );
+ }
+
+ // 删除
+ function setDelete() {
+     $.post(
+         "/delete",
+         {"id":$("#postId").val()},
+         function(data) {
+             data = $.parseJSON(data);
+             if(data.code == 0) {
+                 location.href = "/index";
+             } else {
+                 alert(data.msg);
+             }
+         }
+     );
+ }
