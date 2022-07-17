@@ -1,5 +1,6 @@
 package com.study.forum.config;
 
+import com.study.forum.controller.interceptor.DataInterceptor;
 import com.study.forum.controller.interceptor.LoginRequiredInterceptor;
 import com.study.forum.controller.interceptor.LoginTicketInterceptor;
 import com.study.forum.controller.interceptor.MessageIntercepter;
@@ -28,6 +29,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private MessageIntercepter messageIntercepter;
 
+    @Autowired
+    private DataInterceptor dataInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginTicketInterceptor)
@@ -38,6 +42,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png ", "/**/*.jpg", "/**/*.jpeg ");
 
         registry.addInterceptor(messageIntercepter)
+                .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
+
+        registry.addInterceptor(dataInterceptor)
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
 
     }

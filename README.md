@@ -78,4 +78,26 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
 - thymeleaf结合seurity包解决权限控制问题
   
 
+## Redis高级数据类型
+- HyperLogLog
+  可以将数据合并，并将合并后的数据去重
+- Bitmap
+  按索引存储 true/false, 统计为真的个数, 并对数据做 与或非 运算
+  一个连续的字符串，每一位的0/1代表真和假，按索引存取数据，支持按位存取，可以看成byte数组
+  
+### 业务场景
+- uv: unique vistor：通过用户IP去重统计数据：关注访问量（包括登录与未登录用户、游客等 ）
+- DAU: daily active user: 通过用户ID去重统计数据： 只包括登录用户
+### 功能
+- uv
+  - 统计单日uv和区间段uv
+- DAU
+  - 统计单日DAU和区间段DAU
+  
+### 实现
+- Service 实现以上方法
+- 在拦截器中调用统计今日数据的方法
+- Controller中实现对数据的查询和返回给页面的数据
 
+总结：此处出现的bug: 管理员访问/data路径404，关闭idea清除浏览器缓存数据即可，气死！
+- 使用redis高级数据类型完成统计 独立访问者 和 每日活跃用户 的功能

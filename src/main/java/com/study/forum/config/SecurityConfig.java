@@ -64,7 +64,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Comm
                         AUTHORITY_MODERATOR
                 )
                 /* 管理员具有删帖的权限 */
-                .antMatchers("/delete")
+                .antMatchers(
+                        "/delete",
+                        "/data/**"
+                )
                 .hasAnyAuthority(AUTHORITY_ADMIN)
                 // 放行除此之外的所有请求
                 .anyRequest().permitAll()
