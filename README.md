@@ -100,4 +100,53 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
 - Controller中实现对数据的查询和返回给页面的数据
 
 总结：此处出现的bug: 管理员访问/data路径404，关闭idea清除浏览器缓存数据即可，气死！
+   Edge页面未能完整显示的部分谷歌浏览器可以显示完全
 - 使用redis高级数据类型完成统计 独立访问者 和 每日活跃用户 的功能
+
+## 任务执行和调度
+### 线程池分类
+- JDK线程池(Test类中测试方法)
+  - ExecutorService(普通线程池)
+  - ScheduleExecutorService(可执行定时任务的线程池)
+  
+- Spring线程池(spring配置文件中配置、注入)
+  - ThreadPoolTaskExecutor
+  - ThreadPoolTaskScheduler(在配置类中配置)
+    - 定义一个包含定时任务的方法
+  - 调用方式 ：方法 + 注解的方式
+    - @Async：可被异步调用
+    - @Schedule : 标识一个定时任务方法
+- 分布式定时任务
+  - Spring Quartz
+    - 依赖于DB
+    - 提前创建数据库表
+  
+### 问题
+- 分布式环境下各个服务器都有的定时任务会重复执行
+  - 不会数据共享，所以无法解决问题
+- 定时任务组件改成：Quartz可以解决分布式环境下的定时任务问题
+  - 程序运行的参数存储到数据库，可以对数据库的数据加锁保证线程安全
+  
+### Quartz的使用
+- Job
+  - 定义一个任务
+  - 删除任务：写方法将表中的数据删掉，并将配置类中对应的@bean注释掉
+- Quartz配置类
+  - JobDetail
+    配置这个任务
+  - Trigger
+    配置这个任务
+  
+配置好程序启动时Quartz读取这个信息，并存入表中，数据初始化好之后，配置便不再使用
+
+### 热帖排行
+#### 业务层面
+- 使用定时任务计算帖子的热帖分数(5min)
+- 点赞加精评论时不立即算分，将分数变化的帖子放入缓存(Redis)，定时计算缓存中帖子的分数
+  - 点赞、评论、加精时将帖子放入redis缓存
+  - 新增帖子时为帖子初始化一个分数
+  
+#### 代码层面
+- 新建一个Job
+  - 计算分数并刷新帖子( mysql和 es)
+- 配置类中增加 bean

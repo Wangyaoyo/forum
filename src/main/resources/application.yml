@@ -40,6 +40,34 @@ spring:
       #注意java的es默认连接端口是9200？
       cluster-nodes: localhost:9300
 
+  # spring线程池配置
+  task:
+    execution:
+      pool:
+        core-size: 5          # 核心线程数
+        max-size: 10          # 非核心线程数
+        queue-capacity: 50    # 阻塞队列容量
+    # 可启动定时任务的线程池配置
+    scheduling:
+      pool:
+        size: 5               # 可提前预判数量，故不需要其他参数
+
+
+  quartz:
+    job-store-type: jdbc
+    scheduler-name: communityScheduler
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceId: AUTO
+          jobStore:
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            isClustered: true
+          threadPool:
+            threadCount: 5
+            class: org.quartz.simpl.SimpleThreadPool
 
 mybatis-plus:
   mapper-locations: classpath:/mybatisplus/mapper/*.xml
@@ -59,6 +87,7 @@ community:
   path:
     domain: http://localhost:8080/
     upload: D:/projectForWork/forum-data/
+
 
 
 

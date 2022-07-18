@@ -13,9 +13,11 @@ import com.study.forum.service.UserService;
 import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.HostHolder;
+import com.study.forum.util.RedisKeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +49,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @GetMapping("/discussposts/{userId}")
     public int getRowNumbers(@PathVariable("userId") int userId) {
         return discussPostService.getDiscussPostRows(userId);
@@ -68,6 +73,10 @@ public class DiscussPostController implements CommunityConstant {
         discussPost.setContent(content);
         discussPost.setUserId(user.getId());
         discussPost.setCreateTime(new Date());
+        discussPost.setScore(0.0);
+        discussPost.setStatus(0);
+        discussPost.setType(0);
+        discussPost.setCommentCount(0);
         discussPostService.insert(discussPost);
 
         // 构造Event对象，异步存入ES服务器
@@ -76,8 +85,12 @@ public class DiscussPostController implements CommunityConstant {
                 .setTopic(TOPIC_PUBLISH)
                 .setEntityId(discussPost.getId())
                 .setEntityType(ENTITY_TYPE_POST);
-
         eventProducer.sendEvent(event);
+
+        // 将帖子放入redis中待计算分数
+        String postKey = RedisKeyUtil.getPostKey();
+        // 防止出现重复数据，且对顺序无要求: 选用 set 集合
+        redisTemplate.opsForSet().add(postKey, discussPost.getId());
 
         return CommunityUtil.getJSONString(0, "发布成功！");
     }
@@ -177,8 +190,13 @@ public class DiscussPostController implements CommunityConstant {
                 .setTopic(TOPIC_PUBLISH)
                 .setEntityId(id)
                 .setEntityType(ENTITY_TYPE_POST);
-
         eventProducer.sendEvent(event);
+
+        // 将帖子放入redis中待计算分数
+        String postKey = RedisKeyUtil.getPostKey();
+        // 防止出现重复数据，且对顺序无要求: 选用 set 集合
+        redisTemplate.opsForSet().add(postKey, id);
+
         return CommunityUtil.getJSONString(0);
     }
 

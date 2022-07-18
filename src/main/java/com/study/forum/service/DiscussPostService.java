@@ -34,14 +34,15 @@ public class DiscussPostService {
     private CommentMapper commentMapper;
 
     /**
-     * 分页：用户帖子
+     * 分页查询帖子
      *
      * @param userId
-     * @param offset：从第几页开始
-     * @param limit：条数
+     * @param offset
+     * @param limit
+     * @param orderMode
      * @return
      */
-    public Page<DiscussPost> getPageDiscussPosts(int userId, Integer offset, int limit) {
+    public Page<DiscussPost> getPageDiscussPosts(int userId, Integer offset, int limit, int orderMode) {
         if (offset == null)
             offset = 0;
         Page<DiscussPost> page = new Page<>(offset, limit);
@@ -51,6 +52,10 @@ public class DiscussPostService {
             queryWrapper.eq("user_id", userId);
         }
         queryWrapper.orderByDesc("type");
+        /* 按照帖子分数的倒序排列 */
+        if (orderMode == 1) {
+            queryWrapper.orderByDesc("score");
+        }
         queryWrapper.orderByDesc("create_time");
         discussPostMapper.selectPage(page, queryWrapper);
         return page;
@@ -108,6 +113,7 @@ public class DiscussPostService {
 
     /**
      * 修改帖子状态：普通/置顶
+     *
      * @param id
      * @param type
      * @return
@@ -116,13 +122,14 @@ public class DiscussPostService {
         UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
         wrapper.set("type", type).eq("id", id);
         int update = discussPostMapper.update(null, wrapper);
-        if(update == 1)
+        if (update == 1)
             logger.info("帖子id为{}的帖子修改类型为：{}", id, type);
         return update;
     }
 
     /**
      * 修改帖子状态： 正常/精华/拉黑
+     *
      * @param id
      * @param status
      * @return
@@ -131,9 +138,21 @@ public class DiscussPostService {
         UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
         wrapper.set("status", status).eq("id", id);
         int update = discussPostMapper.update(null, wrapper);
-        if(update == 1)
+        if (update == 1)
             logger.info("帖子id为{}的帖子修改状态为：{}", id, status);
         return update;
+    }
+
+    /**
+     * 更新帖子分数
+     *
+     * @param postId
+     * @param score
+     */
+    public int updateScore(int postId, double score) {
+        UpdateWrapper<DiscussPost> wrapper = new UpdateWrapper<>();
+        wrapper.set("score", score).eq("id", postId);
+        return discussPostMapper.update(null, wrapper);
     }
 
 }
