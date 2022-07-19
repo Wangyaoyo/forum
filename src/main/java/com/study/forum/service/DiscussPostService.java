@@ -52,7 +52,7 @@ public class DiscussPostService {
             queryWrapper.eq("user_id", userId);
         }
         queryWrapper.orderByDesc("type");
-        /* 按照帖子分数的倒序排列 */
+        /* 按照帖子分数的倒序排列 : 1代表最热 */
         if (orderMode == 1) {
             queryWrapper.orderByDesc("score");
         }

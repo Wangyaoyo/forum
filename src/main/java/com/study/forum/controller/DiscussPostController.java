@@ -57,6 +57,28 @@ public class DiscussPostController implements CommunityConstant {
         return discussPostService.getDiscussPostRows(userId);
     }
 
+    @RequestMapping("/myposts")
+    public String getMyPosts(Model model,
+                             @RequestParam(value = "current", required = false) Integer current) {
+        Integer userId = hostHolder.getUser().getId();
+        Page<DiscussPost> page = discussPostService.getPageDiscussPosts(userId, current, 5, 0);
+        List<Map<String, Object>> discussPosts = new ArrayList<>();
+        if (page != null) {
+            for (DiscussPost post : page.getRecords()) {
+                Map<String, Object> map = new HashMap<>();
+                User user = userService.findUserById(post.getUserId());
+                map.put("user", user);
+                map.put("post", post);
+                long count = likeService.count(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", count);
+                discussPosts.add(map);
+            }
+        }
+        model.addAttribute("discussPosts", discussPosts);
+        model.addAttribute("page", page);
+        return "/site/my-post";
+    }
+
     @LoginRequired
     @RequestMapping(value = "/publishpost", method = RequestMethod.POST)
     @ResponseBody
@@ -153,6 +175,7 @@ public class DiscussPostController implements CommunityConstant {
 
     /**
      * 置顶帖子
+     *
      * @param id
      * @return
      */
@@ -175,6 +198,7 @@ public class DiscussPostController implements CommunityConstant {
 
     /**
      * 加精帖子
+     *
      * @param id
      * @return
      */
@@ -202,6 +226,7 @@ public class DiscussPostController implements CommunityConstant {
 
     /**
      * 删除帖子(拉黑)
+     *
      * @param id
      * @return
      */
