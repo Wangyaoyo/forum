@@ -170,3 +170,24 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
 #### 帖子热门程度的列表
 原因：列表间隔一段时间计算一次分数，列表可以在一定时间内保持不变
 
+#### 使用
+- 一级缓存
+  - 下载caffeine , 引入pom中
+  - properties中对caffeine进行配置
+  - 核心接口
+    - cache(I)
+      - LoadingCache(I)
+        - 排队等待返回数据
+        - AsyncCache(I)
+          - 并发的取数据，异步的
+  - 缓存帖子列表和帖子总数
+    
+  - 使用@PostConstruct初始化缓存
+  - userId为0时走缓存，即 首页
+  - 修改代码：使之兼容之前的逻辑  
+  - 配置Jmeter进行性能测试
+    - 注释掉 @Aspect
+    - 启动应用
+  - 性能比较：
+    - 不加Caffeine : 吞吐量：17/sec
+    - 加Caffeine : 吞吐量：194/sec

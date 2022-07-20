@@ -17,6 +17,7 @@ import com.study.forum.util.RedisKeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,16 +53,17 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    @GetMapping("/discussposts/{userId}")
-    public int getRowNumbers(@PathVariable("userId") int userId) {
-        return discussPostService.getDiscussPostRows(userId);
-    }
+//    @GetMapping("/discussposts/{userId}")
+//    public int getRowNumbers(@PathVariable("userId") int userId) {
+//        return discussPostService.getDiscussPostRows(userId);
+//    }
 
     @RequestMapping("/myposts")
     public String getMyPosts(Model model,
                              @RequestParam(value = "current", required = false) Integer current) {
         Integer userId = hostHolder.getUser().getId();
-        Page<DiscussPost> page = discussPostService.getPageDiscussPosts(userId, current, 5, 0);
+        logger.info("查询我的帖子：From DB");
+        Page<DiscussPost> page = (Page<DiscussPost>) discussPostService.getPageDiscussPosts(userId, current, 5, 0).get("page");
         List<Map<String, Object>> discussPosts = new ArrayList<>();
         if (page != null) {
             for (DiscussPost post : page.getRecords()) {

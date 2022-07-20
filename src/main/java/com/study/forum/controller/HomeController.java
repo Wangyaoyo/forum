@@ -40,10 +40,11 @@ public class HomeController implements CommunityConstant{
     public String pageData(@RequestParam(value = "current", required = false) Integer current,
                            @RequestParam(value = "orderMode", defaultValue = "0") int orderMode,
                            Model model) {
-        Page<DiscussPost> page = discussPostService.getPageDiscussPosts(0, current, 10, orderMode);
+        Map<String, Object> resMap = discussPostService.getPageDiscussPosts(0, current, 10, orderMode);
+        List<DiscussPost> posts = (List<DiscussPost>) resMap.get("posts");
         List<Map<String, Object>> discussPosts = new ArrayList<>();
-        if (page != null) {
-            for (DiscussPost post : page.getRecords()) {
+        if (posts != null) {
+            for (DiscussPost post : posts) {
                 Map<String, Object> map = new HashMap<>();
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
@@ -54,7 +55,7 @@ public class HomeController implements CommunityConstant{
             }
         }
         model.addAttribute("discussPosts", discussPosts);
-        model.addAttribute("page", page);
+        model.addAttribute("page", (Page<DiscussPost>)resMap.get("page"));
         model.addAttribute("orderMode", orderMode);
         return "index";
     }

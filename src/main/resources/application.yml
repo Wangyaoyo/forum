@@ -68,6 +68,14 @@ spring:
           threadPool:
             threadCount: 5
             class: org.quartz.simpl.SimpleThreadPool
+  # 配置caffeine
+  cache:
+    caffeine:
+      posts:
+        # 缓存能存的最大的数量
+        max-size: 15
+        # 过期时间
+        expire-seconds: 180
 
 mybatis-plus:
   mapper-locations: classpath:/mybatisplus/mapper/*.xml
@@ -87,7 +95,6 @@ community:
   path:
     domain: http://localhost:8080/
     upload: D:/projectForWork/forum-data/
-
 
 
 

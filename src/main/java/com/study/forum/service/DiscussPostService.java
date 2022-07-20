@@ -3,16 +3,28 @@ package com.study.forum.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.study.forum.mapper.CommentMapper;
 import com.study.forum.mapper.DiscussPostMapper;
 import com.study.forum.pojo.Comment;
 import com.study.forum.pojo.DiscussPost;
 import com.study.forum.util.SensitiveFilter;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
+
+import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -33,21 +45,81 @@ public class DiscussPostService {
     @Autowired
     private CommentMapper commentMapper;
 
+    /* caffeine 存储的最大数量 */
+    @Value("${spring.cache.caffeine.posts.max-size}")
+    private Integer maxSize;
+
+    /* caffeine 过期时间 */
+    @Value("${spring.cache.caffeine.posts.expire-seconds}")
+    private Integer expireSeconds;
+
+    /* caffeine 初始化 */
+    @PostConstruct
+    public void init() {
+        /* 初始化列表缓存 */
+        postListCache = Caffeine.newBuilder()
+                .maximumSize(maxSize)
+                .expireAfterWrite(expireSeconds, TimeUnit.SECONDS)
+                .build(new CacheLoader<String, List<DiscussPost>>() {
+                    @Override
+                    public @Nullable List<DiscussPost> load(@NonNull String key) throws Exception {
+                        // 键值为空
+                        if(key == null || key.length() == 0){
+                            throw new IllegalArgumentException("参数错误！");
+                        }
+
+                        // 键值不为空: 分割为 offset + limit
+                        String[] params = key.split(":");
+                        if(params == null || params.length != 2){
+                            throw new IllegalArgumentException("参数错误！");
+                        }
+                        int offset = Integer.valueOf(params[0]);
+                        int limit = Integer.valueOf(params[1]);
+
+                        /* 此处可以设置二级缓存 e.g. redis缓存 */
+
+                        // 查询数据库初始化 postList
+                        logger.info("Init postlist from DB.");
+                        Page<DiscussPost> page = new Page<>(offset, limit);
+                        QueryWrapper queryWrapper = new QueryWrapper();
+                        queryWrapper.ne("status", 2);
+                        queryWrapper.orderByDesc("type");
+                        queryWrapper.orderByDesc("score");
+                        queryWrapper.orderByDesc("create_time");
+                        return discussPostMapper.selectPage(page, queryWrapper).getRecords();
+                    }
+                });
+    }
+
+    /* caffeine： postList缓存 */
+    private LoadingCache<String, List<DiscussPost>> postListCache;
+
+
     /**
-     * 分页查询帖子
-     *
+     * 分页查询帖子 ： 走 DB/缓存
      * @param userId
      * @param offset
      * @param limit
      * @param orderMode
      * @return
      */
-    public Page<DiscussPost> getPageDiscussPosts(int userId, Integer offset, int limit, int orderMode) {
+    public Map<String, Object> getPageDiscussPosts(int userId, Integer offset, int limit, int orderMode) {
         if (offset == null)
             offset = 0;
+        Map<String, Object> res = new HashMap<>();
+        /* 查询首页的最热帖 首先使用一级缓存 */
+        if(userId == 0 && orderMode == 1){
+            logger.info("Query postlist from Caffeine.");
+            List<DiscussPost> posts = postListCache.get(offset + ":" + limit);
+            res.put("posts", posts);
+            return res;
+        }
+
+        logger.info("Query postlist from DB.");
         Page<DiscussPost> page = new Page<>(offset, limit);
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.ne("status", 2);
+        // 传入userId的话 即 查询某人的帖子
         if (userId != 0) {
             queryWrapper.eq("user_id", userId);
         }
@@ -58,11 +130,13 @@ public class DiscussPostService {
         }
         queryWrapper.orderByDesc("create_time");
         discussPostMapper.selectPage(page, queryWrapper);
-        return page;
+        res.put("page", page);
+        res.put("posts", page.getRecords());
+        return res;
     }
 
     /**
-     * 得到某用户的帖子条数
+     * 得到某用户的帖子条数 ： 走 DB/缓存
      *
      * @param userId
      * @return
