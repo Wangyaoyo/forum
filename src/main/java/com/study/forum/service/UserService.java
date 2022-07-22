@@ -1,7 +1,9 @@
 package com.study.forum.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.Update;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.google.code.kaptcha.Producer;
 import com.study.forum.mapper.UserMapper;
 import com.study.forum.pojo.LoginTicket;
 import com.study.forum.pojo.User;
@@ -9,6 +11,7 @@ import com.study.forum.util.CommunityConstant;
 import com.study.forum.util.CommunityUtil;
 import com.study.forum.util.MailClient;
 import com.study.forum.util.RedisKeyUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.recycler.Recycler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +23,14 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author wy
  * @version 1.0
  */
 @Service
+@Slf4j
 public class UserService implements CommunityConstant {
     @Autowired
     private UserMapper userMapper;
@@ -38,6 +43,9 @@ public class UserService implements CommunityConstant {
 
 //    @Autowired
 //    private LoginTicketMapper loginTicketMapper;
+
+    @Autowired
+    Producer kaptchaProducer;
 
     @Autowired
     private RedisTemplate redisTemplate;
@@ -231,12 +239,6 @@ public class UserService implements CommunityConstant {
         return rows;
     }
 
-    public User findUserByName(String name) {
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("username", name);
-        return userMapper.selectOne(wrapper);
-    }
-
     public Collection<? extends GrantedAuthority> getAuthorities(int userId) {
         User user = this.findUserById(userId);
 
@@ -256,5 +258,73 @@ public class UserService implements CommunityConstant {
             }
         });
         return list;
+    }
+
+    /**
+     * 向指定邮箱发送包含验证码的邮件
+     *
+     * @param email
+     * @return
+     */
+    public void getCode(String email) {
+        // 1.检查该邮箱是否被注册过
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("email", email);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            throw new RuntimeException("该邮箱还未被注册过，请前往注册页面注册！");
+        }
+        // 2.发邮件(email code)
+        // 发送激活邮件
+        Context context = new Context();
+        context.setVariable("email", email);
+
+        // 生成验证码
+        String text = kaptchaProducer.createText();
+        context.setVariable("code", text);
+        String content = templateEngine.process("/mail/forget", context);
+        mailClient.sendMail(email, "重置密码", content);
+        log.info("发送给{}验证码为{}的邮件, 发送成功！", email, text);
+
+        // 3.将验证码存入redis
+        String emailKey = RedisKeyUtil.getEmailKey(email);
+        // 设置 5分钟的有效时间
+        redisTemplate.opsForValue().set(emailKey, text, 5, TimeUnit.MINUTES);
+    }
+
+    /**
+     * 重置密码
+     *
+     * @param email
+     * @param code
+     * @param pass
+     */
+    public int checkAndReset(String email, String code, String pass) {
+        // 1. 检查code是否失效/正确
+        if (email == null || StringUtils.isBlank(email)) {
+            log.info("邮箱为空！");
+            return 1;
+        }
+        if (code == null || StringUtils.isBlank(code)) {
+            log.info("验证码为空！");
+            return 1;
+        }
+        String emailKey = RedisKeyUtil.getEmailKey(email);
+        if (emailKey == null || StringUtils.isBlank(emailKey)) {
+            log.info("验证码失效或不存在！");
+            return 1;
+        }
+        // 2. 重置密码
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("email", email);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            log.info("该邮箱还未被注册过，请前往注册页面注册！");
+            return 1;
+        }
+        user.setPassword(CommunityUtil.md5(pass + user.getSalt()));
+        userMapper.updateById(user);
+        log.info("{}更新密码成功！", email);
+        return 0;
     }
 }

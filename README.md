@@ -186,8 +186,18 @@ bin\windows\zookeeper-server-start.bat config\zookeeper.properties
   - userId为0时走缓存，即 首页
   - 修改代码：使之兼容之前的逻辑  
   - 配置Jmeter进行性能测试
+    - 数据库中添加了30万条post
     - 注释掉 @Aspect
     - 启动应用
+    - 为期 1分钟的压测
   - 性能比较：
     - 不加Caffeine : 吞吐量：17/sec
     - 加Caffeine : 吞吐量：194/sec
+  
+
+## 项目监控
+### spring Actuator使用步骤
+- 依赖
+- 通过HTTP请求查看暴露的端点
+
+## 项目部署

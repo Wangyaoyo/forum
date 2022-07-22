@@ -14,10 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
@@ -172,4 +169,36 @@ public class LoginController {
         SecurityContextHolder.clearContext();
         return "redirect:/login";
     }
+
+    @RequestMapping(value = "/forget", method = RequestMethod.GET)
+    public String forgetPage() {
+        return "/site/forget";
+    }
+
+
+    @RequestMapping(value = "/getCode", method = RequestMethod.GET)
+    @ResponseBody
+    public String getForgetCode(String email, Model model) {
+        userService.getCode(email);
+        return CommunityUtil.getJSONString(0);
+    }
+
+    /**
+     * 重置密码：测试通过：root : wywy
+     * @param email
+     * @param code
+     * @param pass
+     * @param model
+     * @return
+     */
+    @RequestMapping(value = "/resetpass", method = RequestMethod.GET)
+    public String reset(String email, String code, String pass, Model model) {
+        // 1.重置
+        int res = userService.checkAndReset(email, code, pass);
+        if(res == 1){
+            return CommunityUtil.getJSONString(1, "重置失败！");
+        }
+        return "/site/login";
+    }
+
 }

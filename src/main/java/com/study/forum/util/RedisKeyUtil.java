@@ -17,6 +17,7 @@ public class RedisKeyUtil {
     private static final String PREFIX_UV = "uv";
     private static final String PREFIX_DAU = "dau";
     private static final String PREFIX_POST = "post";
+    private static final String PREFIX_EMAILCODE = "email";
 
     // 某个实体的赞
     // like:entity:entityType:entityId  ->  set(userId)
@@ -80,5 +81,9 @@ public class RedisKeyUtil {
     // 返回统计帖子分数的key
     public static String getPostKey() {
         return PREFIX_POST + SPLIT + "score";
+    }
+
+    public static String getEmailKey(String email) {
+        return PREFIX_EMAILCODE + SPLIT + email;
     }
 }
